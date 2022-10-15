@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
+import { save, update } from "../services/people"
 
-function Form() {
+function Form({ personUpdate, setPersonUpdate, getPeople }) {
     const [dni, setDni] = useState("")
     const [name, setName] = useState("")
     const [lastName, setLastName] = useState("")
@@ -20,12 +21,122 @@ function Form() {
     const handleChangeUser = ({ target }) => setUser(target.value)
     const handleChangePassword = ({ target }) => setPassword(target.value)
 
+    const validateFields = () => {
+        if (!dni.trim()) {
+            return "Debe ingresar el documento."
+        }
+
+        if (!name.trim()) {
+            return "Debe ingresar el nombre."
+        }
+
+        if (!lastName.trim()) {
+            return "Debe ingresar el apellido."
+        }
+
+        if (!birth.trim()) {
+            return "Debe ingresar una fecha de nacimiento válida."
+        }
+
+        if (!type.trim()) {
+            return "Debe seleccionar un tipo."
+        }
+
+        if (!email.trim()) {
+            return "Debe ingresar un correo válido."
+        }
+
+        if (!user.trim()) {
+            return "Debe ingresar un usuario"
+        }
+
+        if (!password.trim()) {
+            return "Debe ingresar una contraseña"
+        }
+
+        return null
+    }
+
+    const handleSubmitSave = async (e) => {
+        e.preventDefault()
+        const error = validateFields()
+        setError(error)
+        if (!error) {
+            await save({
+                dni,
+                name,
+                lastName,
+                birth,
+                type,
+                email,
+                user,
+                password
+            })
+            resetForm(e)
+            getPeople()
+        }
+    }
+
+    const handleSubmitUpdate = async (e) => {
+        e.preventDefault()
+        const error = validateFields()
+        setError(error)
+        if (!error) {
+            await update(personUpdate.id, {
+                dni,
+                name,
+                lastName,
+                birth,
+                type,
+                email,
+                user,
+                password
+            })
+            resetForm(e)
+            getPeople()
+        }
+    }
+
+    const resetForm = (e) => {
+        setDni("")
+        setName("")
+        setLastName("")
+        setBirth("")
+        setType("")
+        setEmail("")
+        setUser("")
+        setPassword("")
+        setError(null)
+        setPersonUpdate(null)
+    }
+
+    const loadToUpdate = () => {
+        setDni(personUpdate.dni)
+        setName(personUpdate.name)
+        setLastName(personUpdate.lastName)
+        setBirth(personUpdate.birth)
+        setType(personUpdate.type)
+        setEmail(personUpdate.email)
+        setUser(personUpdate.user)
+        setPassword(personUpdate.password)
+    }
+
+    useEffect(() => {
+        if (personUpdate) {
+            loadToUpdate()
+        }
+    }, [personUpdate])
+
     return (
         <div className='card p-0'>
             <div className='card-header bg-dark text-white'>
-
+                {
+                    !personUpdate
+                        ? <h5><i className="bi bi-person-plus-fill"></i> Agregar persona</h5>
+                        : <h5><i className="bi bi-pencil-fill"></i> Editar persona</h5>
+                }
             </div>
-            <form>
+            <form onSubmit={personUpdate ? handleSubmitUpdate : handleSubmitSave}>
                 <div className='card-body'>
                     <fieldset className="row">
                         <legend>Datos personales</legend>
@@ -82,7 +193,24 @@ function Form() {
                         </div>
                     </fieldset>
                 </div>
-
+                {
+                    error &&
+                    <div className="alert alert-warning d-flex align-items-center mx-3" role="alert">
+                        <i className="bi bi-exclamation-diamond-fill me-2"></i> {error}
+                    </div>
+                }
+                {
+                    !personUpdate
+                        ?
+                        <div className="card-footer bg-white d-flex justify-content-end">
+                            <input className="btn btn-dark" type="submit" value="Guardar" />
+                        </div>
+                        :
+                        <div className="card-footer bg-white d-flex justify-content-end">
+                            <input className="btn btn-secondary mx-3" type="button" value="Cancelar" onClick={(e) => {e.preventDefault(); return resetForm()}} />
+                            <input className="btn btn-primary" type="submit" value="Editar" />
+                        </div>
+                }
             </form>
         </div>
     );
