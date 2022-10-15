@@ -33,6 +33,7 @@ function Person({ data, handleClickDelete, handleClickEdit }) {
         try {
             const res = await fetch("https://picsum.photos/100/150")
             setImageUrl(res.url)
+            setLoading(false)
         } catch (error) {
             console.error("Error al obtener imagen.", error)
         }
@@ -42,7 +43,9 @@ function Person({ data, handleClickDelete, handleClickEdit }) {
         <div className="card mb-3">
             <div className="row g-0">
                 <div className="col-md-4 d-flex justify-content-center align-items-center">
-                    <img src={imageUrl} alt="imagen de picsum" />
+                    {loading 
+                    ? <span>Cargando...</span>
+                    :<img src={imageUrl} alt="imagen de picsum" />}
                 </div>
                 <div className="col-md-8">
                     <div className="card-body">
